@@ -1,0 +1,227 @@
+﻿@page "/"
+
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using SmartComponents.LocalEmbeddings
+@inject LocalEmbedder embedder
+
+<SfGrid @ref="GridReference" Query="CurrentQuery" TValue="MedicalRecord" DataSource="@MedicalRecords"
+        EnableAltRow="true" AllowTextWrap="true">
+    <div>
+        <SfToolbar>
+            <ToolbarItems>
+                <ToolbarItem Type="@ItemType.Input">
+                    <Template>
+                        <!-- Search box for user input and button for triggering smart search -->
+                        <SfTextBox Placeholder="Search here" @bind-Value="@SearchTerm"></SfTextBox>
+                        <SfButton Content="Smart Search" OnClick="SearchClicked"></SfButton>
+                    </Template>
+                </ToolbarItem>
+            </ToolbarItems>
+        </SfToolbar>
+    </div>
+    <GridColumns>
+        <GridColumn Field=@nameof(MedicalRecord.RecordID) TextAlign="TextAlign.Center"
+                    HeaderText="Record ID" Width="90"></GridColumn>
+        <GridColumn Field=@nameof(MedicalRecord.PatientID) TextAlign="TextAlign.Center"
+                    HeaderText="Patient ID" Width="90"></GridColumn>
+        <GridColumn Field=@nameof(MedicalRecord.Symptoms) TextAlign="TextAlign.Center"
+                    HeaderText="Symptoms" Width="140"></GridColumn>
+        <GridColumn Field=@nameof(MedicalRecord.Diagnosis) TextAlign="TextAlign.Center"
+                    HeaderText="Diagnosis" Width="100"></GridColumn>
+        <GridColumn Field=@nameof(MedicalRecord.DoctorDetails) TextAlign="TextAlign.Center"
+                    HeaderText="Doctor Information" Width="140"></GridColumn>
+    </GridColumns>
+</SfGrid>
+
+<style>
+    .search-textbox {
+        width: 30%;
+        display: flex;
+        align-items: center;
+    }
+
+    .e-row.e-altrow {
+        background-color: #FAFAFA;
+    }
+
+    .e-control-wrapper {
+        margin-right: 7px;
+    }
+
+    .e-toolbar-items {
+        margin-top: 4px;
+    }
+</style>
+
+
+@code
+{
+    // Query object to filter data in the grid
+    public Query CurrentQuery = new Query();
+
+    public static SfGrid<MedicalRecord>? GridReference;
+
+    // Threshold for similarity comparison
+    public static double SimilarityValue = 0.6;
+
+    // Search term entered by the user
+    private string? SearchTerm { get; set; }
+
+    public List<MedicalRecord>? MedicalRecords { get; set; }
+
+    // Dictionary to hold embeddings for each medical record
+    public static Dictionary<int, EmbeddingF32> ProductEmbeddings { get; set; } = new Dictionary<int, EmbeddingF32>();
+
+    // Method to create a query based on filtered data
+    public Task<Query> RenderQueryForFilteredData(IEnumerable<object> filteredData, GridColumn column)
+    {
+        List<WhereFilter> inputFilters = new List<WhereFilter>();
+        foreach (var data in filteredData)
+        {
+            // Retrieve the value from the column and apply a "contains" filter
+            var filterValue = data?.GetType().GetProperty(column.Field)?.GetValue(data)?.ToString();
+            if (!string.IsNullOrEmpty(filterValue))
+            {
+                inputFilters.Add(new WhereFilter()
+                {
+                    Field = column.Field,
+                    Operator = "contains",
+                    value = filterValue,
+                    IgnoreCase = true,
+                    Condition = "or"
+                });
+            }
+        }
+        // Create a query using the filters
+        Query query = new Query().Where(WhereFilter.Or(inputFilters));
+        return Task.FromResult(query);
+    }
+
+    // Method triggered when the user clicks the "Smart Search" button
+    private async Task SearchClicked()
+    {
+        if (GridReference != null && MedicalRecords != null)
+        {
+            var filteredColumn = await GridReference.GetColumnByFieldAsync("Symptoms");
+            if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                var queryVector = embedder.Embed(SearchTerm);
+                var filteredRecords = MedicalRecords.Where(p => LocalEmbedder.
+                    Similarity(ProductEmbeddings[p.RecordID], queryVector) > SimilarityValue).ToList();
+                var filteredQuery = await RenderQueryForFilteredData(filteredRecords, filteredColumn);
+                CurrentQuery = filteredQuery;
+            }
+            else
+            {
+                CurrentQuery = new Query();
+            }
+        }
+    }
+
+    // Initialize the component with medical records and their embeddings
+    protected override void OnInitialized()
+    {
+        MedicalRecords = new List<MedicalRecord>
+        {
+            new MedicalRecord
+            {
+                RecordID = 1,
+                PatientID = 615001,
+                Symptoms = "Fever, cough, and shortness of breath.",
+                Diagnosis = "Pneumonia",
+                DoctorDetails = "Dr. John Smith - Specialized in Pulmonology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 2,
+                PatientID = 615002,
+                Symptoms = "Severe headache, nausea, and sensitivity to light.",
+                Diagnosis = "Migraine",
+                DoctorDetails = "Dr. Alice Brown - Specialized in Neurology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 3,
+                PatientID = 615003,
+                Symptoms = "Fatigue, weight gain, and hair loss.",
+                Diagnosis = "Hypothyroidism",
+                DoctorDetails = "Dr. Robert Johnson - Specialized in Endocrinology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 4,
+                PatientID = 615004,
+                Symptoms = "Chest pain, shortness of breath, and sweating.",
+                Diagnosis = "Heart Attack",
+                DoctorDetails = "Dr. Michael Williams - Specialized in Cardiology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 5,
+                PatientID = 615005,
+                Symptoms = "Joint pain, stiffness, and swelling.",
+                Diagnosis = "Arthritis",
+                DoctorDetails = "Dr. Mary Jones - Specialized in Rheumatology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 6,
+                PatientID = 615006,
+                Symptoms = "Abdominal pain, bloating, and irregular bowel movements.",
+                Diagnosis = "Irritable Bowel Syndrome (IBS)",
+                DoctorDetails = "Dr. Patricia Garcia - Specialized in Gastroenterology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 7,
+                PatientID = 615007,
+                Symptoms = "Frequent urination, excessive thirst, and unexplained weight loss.",
+                Diagnosis = "Diabetes",
+                DoctorDetails = "Dr. Robert Johnson - Specialized in Endocrinology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 8,
+                PatientID = 615008,
+                Symptoms = "Persistent sadness, loss of interest, and fatigue.",
+                Diagnosis = "Depression",
+                DoctorDetails = "Dr. Linda Martinez - Specialized in Psychiatry"
+            },
+            new MedicalRecord
+            {
+                RecordID = 9,
+                PatientID = 615009,
+                Symptoms = "Shortness of breath, wheezing, and chronic cough.",
+                Diagnosis = "Asthma",
+                DoctorDetails = "Dr. John Smith - Specialized in Pulmonology"
+            },
+            new MedicalRecord
+            {
+                RecordID = 10,
+                PatientID = 615010,
+                Symptoms = "High blood pressure, headaches, and blurred vision.",
+                Diagnosis = "Hypertension",
+                DoctorDetails = "Dr. Michael Williams - Specialized in Cardiology"
+            }
+        };
+        foreach (var data in MedicalRecords) // Generate embeddings for each medical record
+        {
+            ProductEmbeddings.TryAdd(data.RecordID,
+                embedder.Embed($"{data.DoctorDetails} {data.PatientID} {data.Symptoms} {data.Diagnosis}"));
+        }
+    }
+
+    // Class representing a medical record
+    public class MedicalRecord
+    {
+        public int RecordID { get; set; }
+        public int PatientID { get; set; }
+        public string? DoctorDetails { get; set; }
+        public string? Symptoms { get; set; }
+        public string? Diagnosis { get; set; }
+    }
+}
+
