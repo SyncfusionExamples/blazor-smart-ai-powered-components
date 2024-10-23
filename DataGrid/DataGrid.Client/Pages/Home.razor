@@ -14,6 +14,7 @@
             <ToolbarItems>
                 <ToolbarItem Type="@ItemType.Input">
                     <Template>
+                        <!-- Search box for user input and button for triggering smart search -->
                         <SfTextBox Placeholder="Search here" @bind-Value="@SearchTerm"></SfTextBox>
                         <SfButton Content="Smart Search" OnClick="SearchClicked"></SfButton>
                     </Template>
@@ -58,23 +59,29 @@
 
 @code
 {
+    // Query object to filter data in the grid
     public Query CurrentQuery = new Query();
 
     public static SfGrid<MedicalRecord>? GridReference;
 
+    // Threshold for similarity comparison
     public static double SimilarityValue = 0.6;
 
+    // Search term entered by the user
     private string? SearchTerm { get; set; }
 
     public List<MedicalRecord>? MedicalRecords { get; set; }
 
+    // Dictionary to hold embeddings for each medical record
     public static Dictionary<int, EmbeddingF32> ProductEmbeddings { get; set; } = new Dictionary<int, EmbeddingF32>();
 
+    // Method to create a query based on filtered data
     public Task<Query> RenderQueryForFilteredData(IEnumerable<object> filteredData, GridColumn column)
     {
         List<WhereFilter> inputFilters = new List<WhereFilter>();
         foreach (var data in filteredData)
         {
+            // Retrieve the value from the column and apply a "contains" filter
             var filterValue = data?.GetType().GetProperty(column.Field)?.GetValue(data)?.ToString();
             if (!string.IsNullOrEmpty(filterValue))
             {
@@ -88,10 +95,12 @@
                 });
             }
         }
+        // Create a query using the filters
         Query query = new Query().Where(WhereFilter.Or(inputFilters));
         return Task.FromResult(query);
     }
 
+    // Method triggered when the user clicks the "Smart Search" button
     private async Task SearchClicked()
     {
         if (GridReference != null && MedicalRecords != null)
@@ -112,6 +121,7 @@
         }
     }
 
+    // Initialize the component with medical records and their embeddings
     protected override void OnInitialized()
     {
         MedicalRecords = new List<MedicalRecord>
@@ -197,13 +207,14 @@
                 DoctorDetails = "Dr. Michael Williams - Specialized in Cardiology"
             }
         };
-        foreach (var data in MedicalRecords)
+        foreach (var data in MedicalRecords) // Generate embeddings for each medical record
         {
             ProductEmbeddings.TryAdd(data.RecordID,
                 embedder.Embed($"{data.DoctorDetails} {data.PatientID} {data.Symptoms} {data.Diagnosis}"));
         }
     }
 
+    // Class representing a medical record
     public class MedicalRecord
     {
         public int RecordID { get; set; }
