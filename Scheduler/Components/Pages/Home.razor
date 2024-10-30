@@ -7,6 +7,7 @@
 @using Syncfusion.Blazor.DataForm
 @using Syncfusion.Blazor.Inputs
 @using Syncfusion.Blazor.Calendars
+@using Syncfusion.Blazor.Spinner
 @inject IJSRuntime JSRuntime
 
 <div>
@@ -79,11 +80,13 @@
                     <!-- Button to cancel and close dialog -->
                     <SfButton OnClick="CloseAppointmentDialog">Cancel</SfButton>
                 </FormButtons>
+                <!-- Spinner to show loading status during Smart Paste -->
+                <SfSpinner @bind-Visible="@SpinnerVisibility"></SfSpinner>
             </SfDataForm>
         </Content>
     </DialogTemplates>
     <!-- Events for dialog open and close -->
-    <DialogEvents Opened="OnDialogOpened" Closed="OnDialogClosed"></DialogEvents>
+    <DialogEvents Opened="OnDialogOpened" Closed="OnDialogClosed" OnOpen="@OnOpenHandler"></DialogEvents>
 </SfDialog>
 
 <style>
@@ -115,9 +118,8 @@
 </style>
 
 @code {
-
     // Content for initial display in the text area
-    public string? Content = @"Discussion on Ticket 429519 
+    public string? Content = @"Discussion on Ticket 429519
     Hi John, We have scheduled the meeting for tomorrow (29th oct) at 1 PM IST at Mathura Towers and this meeting is scheduled for an hour to discuss the issue related to the ticket 429519 only. For any other issues, please create a new ticket or update the respective tickets and our technical team will follow up with the details in those tickets. Note: Screen sharing is to see the issue at your end and debug directly, if needed. We request you to contact your IT team and get prior approval/disable firewall settings to share the controls. This will help to minimize the resolution time.";
 
     // Model for appointment data
@@ -128,19 +130,22 @@
     private SfDialog? dialog;
     private SfSchedule<Appointment>? schedule;
 
+    // Controls visibility of the spinner
+    private bool SpinnerVisibility { get; set; } = false;
+
     // Controls dialog visibility
     private bool isDialogVisible = false;
 
     // List to store appointments displayed in the schedule
     private List<Appointment> appointments = new();
 
-    // Method to open the appointment dialog
+    // Opens the appointment dialog
     private void OpenAppointmentDialog() => isDialogVisible = true;
 
-    // Method to close the appointment dialog
+    // Closes the appointment dialog
     private void CloseAppointmentDialog() => isDialogVisible = false;
 
-    // Event handler for dialog opened event, triggers Smart Paste button click
+    // Handler for when dialog is opened; triggers Smart Paste and spinner until data is loaded
     public async Task OnDialogOpened(Syncfusion.Blazor.Popups.OpenEventArgs args)
     {
         await JSRuntime.InvokeVoidAsync("clickButton", "smart-button");
@@ -148,28 +153,35 @@
         {
             await Task.Delay(1000);
         }
+        SpinnerVisibility = false;
         StateHasChanged();
     }
 
-    // Event handler for dialog closed event, resets the form model
+    // Resets form model when dialog is closed
     public void OnDialogClosed(CloseEventArgs args)
     {
         appointmentModel = new AppointmentModel();
         dataForm?.Refresh();
     }
 
-    // Method to save the new appointment details to the schedule
+    // Shows spinner during Smart Paste
+    public void OnOpenHandler(BeforeOpenEventArgs args)
+    {
+        SpinnerVisibility = true;
+    }
+
+    // Saves the new appointment details to the schedule
     private void SaveAppointment()
     {
         appointments.Add(new Appointment
-        {
-            Id = appointments.Count + 1,
-            Subject = appointmentModel.Subject,
-            StartTime = appointmentModel.StartTime,
-            EndTime = appointmentModel.EndTime,
-            Location = appointmentModel.Location,
-            Description = appointmentModel.Description
-        });
+            {
+                Id = appointments.Count + 1,
+                Subject = appointmentModel.Subject,
+                StartTime = appointmentModel.StartTime,
+                EndTime = appointmentModel.EndTime,
+                Location = appointmentModel.Location,
+                Description = appointmentModel.Description
+            });
         schedule?.RefreshAsync();
         isDialogVisible = false;
     }
