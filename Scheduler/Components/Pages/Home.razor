@@ -1,0 +1,213 @@
+﻿@page "/"
+
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.SmartComponents
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.DataForm
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Calendars
+@inject IJSRuntime JSRuntime
+
+<div>
+    <!-- Text area to display initial content -->
+    <SfTextArea Value="@Content" RowCount="7" ColumnCount="240"></SfTextArea>
+</div>
+
+<div style="margin:10px">
+    <!-- Button to open appointment dialog -->
+    <SfButton Content="Smart Appointment" CssClass="e-info" OnClick="OpenAppointmentDialog"></SfButton>
+</div>
+
+<SfSchedule TValue="Appointment" ShowHeaderBar="true" @ref="schedule">
+    <ScheduleViews>
+        <!-- Sets the calendar view to Month -->
+        <ScheduleView Option="View.Month"></ScheduleView>
+    </ScheduleViews>
+    <!-- Data source for displaying appointments -->
+    <ScheduleEventSettings DataSource="@appointments"></ScheduleEventSettings>
+</SfSchedule>
+
+<SfDialog @ref="dialog" Target="#target" Width="400px" Visible="isDialogVisible" ShowCloseIcon="true" IsModal="true">
+    <DialogTemplates>
+        <Header>New Appointment</Header>
+        <Content>
+            <!-- Form to capture appointment details -->
+            <SfDataForm ID="appointmentForm" Model="@appointmentModel" ColumnCount="2" @ref="dataForm">
+                <FormItems>
+                    <FormItem Field="@nameof(AppointmentModel.Subject)">
+                        <!-- Field to input subject of the appointment -->
+                        <Template>
+                            <label class="e-form-label">Subject</label>
+                            <SfTextBox HtmlAttributes="subjectAttributes" @bind-Value="appointmentModel.Subject"></SfTextBox>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(AppointmentModel.Location)">
+                        <!-- Field to input location of the appointment -->
+                        <Template>
+                            <label class="e-form-label">Location</label>
+                            <SfTextBox HtmlAttributes="locationAttributes" @bind-Value="appointmentModel.Location"></SfTextBox>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(AppointmentModel.StartTime)">
+                        <!-- Field to select appointment start time -->
+                        <Template>
+                            <label class="e-form-label">Start Time</label>
+                            <SfDateTimePicker HtmlAttributes="startTimeAttributes" @bind-Value="appointmentModel.StartTime" Format="MM/dd/yyyy HH:mm"></SfDateTimePicker>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(AppointmentModel.EndTime)">
+                        <!-- Field to select appointment end time -->
+                        <Template>
+                            <label class="e-form-label">End Time</label>
+                            <SfDateTimePicker HtmlAttributes="endTimeAttributes" @bind-Value="appointmentModel.EndTime" Format="MM/dd/yyyy HH:mm"></SfDateTimePicker>
+                        </Template>
+                    </FormItem>
+                    <FormItem Field="@nameof(AppointmentModel.Description)">
+                        <!-- Field to input description of the appointment -->
+                        <Template>
+                            <label class="e-form-label">Description</label>
+                            <SfTextArea HtmlAttributes="descriptionAttributes" @bind-Value="appointmentModel.Description"></SfTextArea>
+                        </Template>
+                    </FormItem>
+                </FormItems>
+                <FormButtons>
+                    <!-- Button to paste content automatically into form fields -->
+                    <SfSmartPasteButton Content="Smart Paste" IconCss="e-icons e-paste" CssClass="smart-button"></SfSmartPasteButton>
+                    <!-- Button to save appointment details -->
+                    <SfButton OnClick="SaveAppointment" IsPrimary="true">Save</SfButton>
+                    <!-- Button to cancel and close dialog -->
+                    <SfButton OnClick="CloseAppointmentDialog">Cancel</SfButton>
+                </FormButtons>
+            </SfDataForm>
+        </Content>
+    </DialogTemplates>
+    <!-- Events for dialog open and close -->
+    <DialogEvents Opened="OnDialogOpened" Closed="OnDialogClosed"></DialogEvents>
+</SfDialog>
+
+<style>
+    /* Styles for the dialog and form layout */
+    #target {
+        height: 600px;
+    }
+
+    .e-data-form .e-grid-col-2.e-form-layout:nth-of-type(3) {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .e-dialog.e-popup {
+        width: 500px !important;
+    }
+
+    .smart-button {
+        visibility: hidden;
+    }
+
+    .control-section .row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .e-data-form .e-button-right {
+        margin-bottom: 16px !important;
+    }
+</style>
+
+@code {
+
+    // Content for initial display in the text area
+    public string? Content = @"Discussion on Ticket 429519 
+    Hi John, We have scheduled the meeting for tomorrow (29th oct) at 1 PM IST at Mathura Towers and this meeting is scheduled for an hour to discuss the issue related to the ticket 429519 only. For any other issues, please create a new ticket or update the respective tickets and our technical team will follow up with the details in those tickets. Note: Screen sharing is to see the issue at your end and debug directly, if needed. We request you to contact your IT team and get prior approval/disable firewall settings to share the controls. This will help to minimize the resolution time.";
+
+    // Model for appointment data
+    private AppointmentModel appointmentModel = new();
+
+    // References to form, dialog, and schedule components
+    private SfDataForm? dataForm;
+    private SfDialog? dialog;
+    private SfSchedule<Appointment>? schedule;
+
+    // Controls dialog visibility
+    private bool isDialogVisible = false;
+
+    // List to store appointments displayed in the schedule
+    private List<Appointment> appointments = new();
+
+    // Method to open the appointment dialog
+    private void OpenAppointmentDialog() => isDialogVisible = true;
+
+    // Method to close the appointment dialog
+    private void CloseAppointmentDialog() => isDialogVisible = false;
+
+    // Event handler for dialog opened event, triggers Smart Paste button click
+    public async Task OnDialogOpened(Syncfusion.Blazor.Popups.OpenEventArgs args)
+    {
+        await JSRuntime.InvokeVoidAsync("clickButton", "smart-button");
+        while (string.IsNullOrEmpty(appointmentModel.Subject))
+        {
+            await Task.Delay(1000);
+        }
+        StateHasChanged();
+    }
+
+    // Event handler for dialog closed event, resets the form model
+    public void OnDialogClosed(CloseEventArgs args)
+    {
+        appointmentModel = new AppointmentModel();
+        dataForm?.Refresh();
+    }
+
+    // Method to save the new appointment details to the schedule
+    private void SaveAppointment()
+    {
+        appointments.Add(new Appointment
+        {
+            Id = appointments.Count + 1,
+            Subject = appointmentModel.Subject,
+            StartTime = appointmentModel.StartTime,
+            EndTime = appointmentModel.EndTime,
+            Location = appointmentModel.Location,
+            Description = appointmentModel.Description
+        });
+        schedule?.RefreshAsync();
+        isDialogVisible = false;
+    }
+
+    // Attribute dictionaries for form fields, containing Smart Paste metadata
+    Dictionary<string, object> subjectAttributes = new()
+    { { "data-smartpaste-description", "Subject should summarize the main topic." } };
+
+    Dictionary<string, object> descriptionAttributes = new()
+    { { "data-smartpaste-description", "Provide a summary of the appointment." } };
+
+    Dictionary<string, object> startTimeAttributes = new()
+    { { "data-smartpaste-description", "Specify the start time (MM/dd/yyyy HH:mm)." } };
+
+    Dictionary<string, object> endTimeAttributes = new()
+    { { "data-smartpaste-description", "Specify the end time (MM/dd/yyyy HH:mm)." } };
+
+    Dictionary<string, object> locationAttributes = new()
+    { { "data-smartpaste-description", "Optional: add location if applicable." } };
+
+    // Model class for appointment form fields
+    public class AppointmentModel
+    {
+        public string? Subject { get; set; }
+        public string? Location { get; set; }
+        public DateTime StartTime { get; set; } = DateTime.Now;
+        public DateTime EndTime { get; set; } = DateTime.Now;
+        public string? Description { get; set; }
+    }
+
+    // Class representing appointment data in the schedule
+    public class Appointment
+    {
+        public int Id { get; set; }
+        public string? Subject { get; set; }
+        public string? Location { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string? Description { get; set; }
+    }
+}
