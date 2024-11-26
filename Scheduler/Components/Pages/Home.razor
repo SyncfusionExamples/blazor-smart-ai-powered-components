@@ -22,8 +22,8 @@
 
 <SfSchedule TValue="Appointment" ShowHeaderBar="true" @ref="schedule">
     <ScheduleViews>
-        <!-- Sets the calendar view to Month -->
-        <ScheduleView Option="View.Month"></ScheduleView>
+        <!-- Sets the calendar view to week -->
+        <ScheduleView Option="View.Week"></ScheduleView>
     </ScheduleViews>
     <!-- Data source for displaying appointments -->
     <ScheduleEventSettings DataSource="@appointments"></ScheduleEventSettings>
@@ -101,6 +101,11 @@
 
     .e-dialog.e-popup {
         width: 500px !important;
+    }
+
+    .e-grid-col-2.e-form-layout
+    {
+        gap: 10px !important;
     }
 
     .smart-button {
