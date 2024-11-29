@@ -25,6 +25,7 @@
         <!-- Sets the calendar view to week -->
         <ScheduleView Option="View.Week"></ScheduleView>
     </ScheduleViews>
+    <ScheduleEvents TValue="Appointment" EventRendered="OnEventRendered"></ScheduleEvents>
     <!-- Data source for displaying appointments -->
     <ScheduleEventSettings DataSource="@appointments"></ScheduleEventSettings>
 </SfSchedule>
@@ -125,10 +126,12 @@
 @code {
     // Content for initial display in the text area
     public string? Content = @"Discussion on Ticket 429519
-    Hi John, We have scheduled the meeting for tomorrow (29th oct) at 1 PM IST at Mathura Towers and this meeting is scheduled for an hour to discuss the issue related to the ticket 429519 only. For any other issues, please create a new ticket or update the respective tickets and our technical team will follow up with the details in those tickets. Note: Screen sharing is to see the issue at your end and debug directly, if needed. We request you to contact your IT team and get prior approval/disable firewall settings to share the controls. This will help to minimize the resolution time.";
+    Hi John, We have scheduled the meeting for tomorrow (29th Nov) at 1 AM IST at Mathura Towers and this meeting is scheduled for an hour to discuss the issue related to the ticket 429519 only. For any other issues, please create a new ticket or update the respective tickets and our technical team will follow up with the details in those tickets. Note: Screen sharing is to see the issue at your end and debug directly, if needed. We request you to contact your IT team and get prior approval/disable firewall settings to share the controls. This will help to minimize the resolution time.";
 
     // Model for appointment data
     private AppointmentModel appointmentModel = new();
+
+    public string[] CustomClass = { "e-appointment-border" };
 
     // References to form, dialog, and schedule components
     private SfDataForm? dataForm;
@@ -160,6 +163,11 @@
         }
         SpinnerVisibility = false;
         StateHasChanged();
+    }
+
+    public void OnEventRendered(EventRenderedArgs<Appointment> args)
+    {
+        args.CssClasses = new List<string>(CustomClass);
     }
 
     // Resets form model when dialog is closed

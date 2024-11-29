@@ -4,121 +4,103 @@
 @using Syncfusion.Blazor.DropDowns
 @using SmartComponents.LocalEmbeddings
 
-<div class="control-wrapper">
-    <h6 style="text-align:center;"><b>Select an Expense Category</b></h6>
-    <br>
-    <!-- Syncfusion ComboBox for selecting an expense category -->
-    <SfComboBox @ref="ExpenseCategoryComboBox" 
-                Width="70%" 
-                TValue="string" 
-                TItem="ExpenseCategory" 
-                PopupHeight="230px" 
-                AllowFiltering="true" 
-                Placeholder="Type transport, school, or dress" 
-                @bind-Value="@SelectedCategory" 
-                DataSource="@FilteredCategories">
-        <ComboBoxEvents TValue="string" TItem="ExpenseCategory" Filtering="HandleFiltering" />
-        <ComboBoxFieldSettings Text="Name" Value="ID" />
-    </SfComboBox>
-</div>
+<SfComboBox @ref="expenseCategoryComboBox" Width="70%"
+            TValue="string"
+            TItem="ExpenseCategory"
+            AllowFiltering="true"
+            PopupHeight="230px"
+            Placeholder="Select or type an expense category"
+            DataSource="@filteredCategories">
+    <ComboBoxEvents TValue="string" TItem="ExpenseCategory" Filtering="HandleFilteringAsync" />
+    <ComboBoxFieldSettings Text="Name" Value="ID" />
+</SfComboBox>
 
 @code {
-    // Constants for similarity threshold
-    private const double SimilarityThreshold = 0.65;
 
-    // Fields to store search term and selected category
-    private string SearchTerm = string.Empty;
-    private string SelectedCategory = string.Empty;
+    // Threshold for determining similarity in semantic search
+    private const double similarityThreshold = 0.65;
 
-    // ComboBox reference (nullable since it's initialized later)
-    private SfComboBox<string, ExpenseCategory>? ExpenseCategoryComboBox;
+    // Reference to the ComboBox for applying filter updates
+    private SfComboBox<string, ExpenseCategory>? expenseCategoryComboBox;
 
-    // List of all expense categories
-    private List<ExpenseCategory> AllCategories = new();
+    // List to hold all available categories
+    private List<ExpenseCategory> allCategories = new();
 
-    // List of filtered categories for ComboBox suggestions
-    private List<ExpenseCategory> FilteredCategories = new();
+    // List to hold filtered categories based on user input
+    private List<ExpenseCategory> filteredCategories = new();
 
-    // Dictionary to store embeddings for each category
-    private Dictionary<string, EmbeddingF32> CategoryEmbeddings = new();
+    // Dictionary to store embeddings for all categories
+    private Dictionary<string, EmbeddingF32> categoryEmbeddings = new();
 
-    // Class to represent an expense category with ID and Name
+    // Method called when the component is initialized
+    protected override async Task OnInitializedAsync()
+    {
+        // Load all available categories
+        allCategories = LoadExpenseCategories();
+
+        // Initialize the filtered list with all categories
+        filteredCategories = new(allCategories);
+
+        // Generate and store embeddings for all category names
+        foreach (var category in allCategories)
+        {
+            categoryEmbeddings[category.ID] = await Task.Run(() => Embedder.Embed(category.Name));
+        };
+    }
+
+    // Method to handle filtering logic in the ComboBox
+    private async Task HandleFilteringAsync(FilteringEventArgs args)
+    {
+        // Retrieve the search term entered by the user
+        var searchTerm = args.Text ?? string.Empty;
+
+        if (string.IsNullOrEmpty(searchTerm))
+        {
+            // If no search term, reset to show all categories
+            filteredCategories = new(allCategories);
+        }
+        else
+        {
+            // Generate the embedding for the search term
+            var queryVector = await Task.Run(() => Embedder.Embed(searchTerm));
+
+            // Filter categories based on similarity threshold
+            filteredCategories = await Task.Run(() => allCategories
+                .Where(category => LocalEmbedder.Similarity(categoryEmbeddings[category.ID], queryVector) > similarityThreshold)
+                .ToList());
+        }
+
+        // Apply the filtered categories to the ComboBox
+        expenseCategoryComboBox?.FilterAsync(filteredCategories);
+    }
+
+    // Method to load the list of expense categories
+    private List<ExpenseCategory> LoadExpenseCategories() => new()
+    {
+        new() { ID = "Category1", Name = "Groceries" },
+        new() { ID = "Category2", Name = "Utilities" },
+        new() { ID = "Category3", Name = "Rent" },
+        new() { ID = "Category4", Name = "Education" },
+        new() { ID = "Category5", Name = "Car Payment" },
+        new() { ID = "Category6", Name = "Car Insurance" },
+        new() { ID = "Category7", Name = "Health Insurance" },
+        new() { ID = "Category8", Name = "Life Insurance" },
+        new() { ID = "Category9", Name = "Home Insurance" },
+        new() { ID = "Category10", Name = "Gas" },
+        new() { ID = "Category11", Name = "Public Transportation" },
+        new() { ID = "Category12", Name = "Dining Out" },
+        new() { ID = "Category13", Name = "Entertainment" },
+        new() { ID = "Category14", Name = "Travel" },
+        new() { ID = "Category15", Name = "Clothing" },
+        new() { ID = "Category16", Name = "Electronics" },
+        new() { ID = "Category17", Name = "Pet Care" },
+        new() { ID = "Category18", Name = "Other" }
+    };
+
+    // Class to represent an expense category
     public class ExpenseCategory
     {
         public string ID { get; set; } = string.Empty; // Unique identifier for the category
         public string Name { get; set; } = string.Empty; // Name of the category
-    }
-
-    // Method called when the component is initialized
-    protected override void OnInitialized()
-    {
-        // Ensure Embedder service is available
-        if (Embedder == null)
-        {
-            throw new InvalidOperationException("Embedder service is not available.");
-        }
-
-        // Load expense categories and initialize filtered list
-        AllCategories = LoadExpenseCategories();
-        FilteredCategories = new List<ExpenseCategory>(AllCategories);
-
-        // Generate embeddings for each category to enable similarity-based filtering
-        foreach (var category in AllCategories)
-        {
-            CategoryEmbeddings[category.ID] = Embedder.Embed(category.Name);
-        }
-    }
-
-    // Handles filtering logic based on the search term entered in the ComboBox
-    private void HandleFiltering(FilteringEventArgs args)
-    {
-        // Get the search term from the event arguments
-        SearchTerm = args.Text ?? string.Empty;
-
-        // If the search term is empty, show all categories
-        if (string.IsNullOrEmpty(SearchTerm))
-        {
-            FilteredCategories = new List<ExpenseCategory>(AllCategories);
-        }
-        else
-        {
-            // Generate an embedding for the search term
-            var queryVector = Embedder.Embed(SearchTerm);
-
-            // Filter categories based on similarity score
-            FilteredCategories = AllCategories
-                .Where(category => LocalEmbedder.Similarity(CategoryEmbeddings[category.ID], queryVector) > SimilarityThreshold)
-                .ToList();
-        }
-
-        // Apply the filtered list to the ComboBox
-        ExpenseCategoryComboBox?.FilterAsync(FilteredCategories);
-    }
-
-    // Loads the predefined list of expense categories
-    private static List<ExpenseCategory> LoadExpenseCategories()
-    {
-        // Return a list of expense categories
-        return new List<ExpenseCategory>
-        {
-            new() { ID = "Category1", Name = "Groceries" },
-            new() { ID = "Category2", Name = "Utilities" },
-            new() { ID = "Category3", Name = "Rent" },
-            new() { ID = "Category4", Name = "Education" },
-            new() { ID = "Category5", Name = "Car Payment" },
-            new() { ID = "Category6", Name = "Car Insurance" },
-            new() { ID = "Category7", Name = "Health Insurance" },
-            new() { ID = "Category8", Name = "Life Insurance" },
-            new() { ID = "Category9", Name = "Home Insurance" },
-            new() { ID = "Category10", Name = "Gas" },
-            new() { ID = "Category11", Name = "Public Transportation" },
-            new() { ID = "Category12", Name = "Dining Out" },
-            new() { ID = "Category13", Name = "Entertainment" },
-            new() { ID = "Category14", Name = "Travel" },
-            new() { ID = "Category15", Name = "Clothing" },
-            new() { ID = "Category16", Name = "Electronics" },
-            new() { ID = "Category17", Name = "Pet Care" },
-            new() { ID = "Category18", Name = "Other" }
-        };
     }
 }
