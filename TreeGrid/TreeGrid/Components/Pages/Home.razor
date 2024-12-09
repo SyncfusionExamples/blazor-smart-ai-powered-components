@@ -1,0 +1,144 @@
+﻿@page "/"
+@using System.Text.Json
+@using TreeGrid.Services
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.Buttons
+@inject AzureAIService openAIService
+
+<SfTreeGrid @ref="treeGridComponent" DataSource="@treeGridData" IdMapping="CategoryId" ParentIdMapping="ParentId"
+            TreeColumnIndex="1">
+    <TreeGridEditSettings AllowEditing="true" />
+    <TreeGridColumns>
+        <TreeGridColumn Field="CategoryId" HeaderText="Category ID" IsPrimaryKey="true"
+                        Width="80" TextAlign="TextAlign.Center" />
+        <TreeGridColumn Field="CategoryName" HeaderText="Category Name" Width="150"
+                        TextAlign="TextAlign.Center" />
+        <TreeGridColumn Field="Status" HeaderText="Status" Width="100" TextAlign="TextAlign.Center" />
+        <TreeGridColumn Field="OrderDate" HeaderText="Last Order Date" Format="d" Width="120"
+                        TextAlign="TextAlign.Center" />
+    </TreeGridColumns>
+    <SfToolbar ID="TreeGrid_AISample_Toolbar">
+        <ToolbarItems>
+            <ToolbarItem>
+                <Template>
+                    <!-- Button to trigger the Smart Data Restructure -->
+                    <SfButton IsPrimary ID="openAI" @onclick="OpenAIHandler">Smart Data Restructure</SfButton>
+                </Template>
+            </ToolbarItem>
+        </ToolbarItems>
+    </SfToolbar>
+</SfTreeGrid>
+
+
+@code {
+
+    // TreeGrid reference used to interact with the TreeGrid component in the code-behind.
+    private SfTreeGrid<BusinessObject>? treeGridComponent;
+
+    // List holding the data that will be displayed in the TreeGrid.
+    private List<BusinessObject>? treeGridData;
+
+    // Initializes the component and loads data into the grid.
+    protected override void OnInitialized()
+    {
+        treeGridData = GetAdaptiveStructureData();
+    }
+
+    // This method triggers when the 'Smart Data Restructure' button is clicked.
+    private async Task OpenAIHandler()
+    {
+        if (treeGridComponent == null || treeGridData == null) return;
+
+        // Displays loading spinner while the AI response is being processed.
+        await treeGridComponent.ShowSpinnerAsync();
+
+        // Prepares the prompt to send to the AI service.
+        var aiPrompt = GeneratePrompt(treeGridData);
+        var result = await openAIService.GetCompletionAsync(aiPrompt);
+
+        if (!string.IsNullOrWhiteSpace(result))
+        {
+            try
+            {
+                // Cleans up the AI response.
+                result = result.Replace("```json", "").Replace("```", "").Trim();
+
+                // Parses the JSON response from the AI.
+                var response = JsonDocument.Parse(result).RootElement.GetProperty("TreeGridData").GetRawText();
+
+                // Deserializes the AI response back into a list of BusinessObject.
+                var sortedCollection = JsonSerializer.Deserialize<List<BusinessObject>>(response);
+
+                if (sortedCollection?.Count > 0)
+                {
+                    // Updates the grid data with the sorted data from AI.
+                    treeGridData = sortedCollection;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing AI response: {ex.Message}");
+            }
+        }
+
+        // Hides the loading spinner once the task is completed.
+        await treeGridComponent.HideSpinnerAsync();
+    }
+
+    // Generates a prompt to send to the AI for data restructuring.
+    private string GeneratePrompt(List<BusinessObject> data)
+    {
+        // Serializes the data to JSON for the AI.
+        var jsonData = JsonSerializer.Serialize(new { TreeGridData = data });
+
+        // The prompt asks the AI to reorganize data based on hierarchical structures (CategoryId and ParentId).
+        return $@"
+        I want you to act as a TreeGrid Data Organizer.
+        Your task is to organize a dataset based on a hierarchical structure using 'CategoryId' and 'ParentId'.
+        Each item in the dataset has a 'CategoryName' representing categories, and some categories have a null
+        'ParentId', indicating they are top-level categories. Your role will be to scan the dataset to identify
+        related items based on their 'CategoryName' values and nest them under the appropriate top-level
+        categories by updating their 'ParentId'. The output should be the updated TreeGridData with correct
+        'ParentId' values. Return only the TreeGridData in JSON format: {jsonData}";
+    }
+
+    // Returns a list of sample data representing the hierarchical structure of categories.
+    private List<BusinessObject> GetAdaptiveStructureData() => new()
+    {
+        new BusinessObject { CategoryId = 1, CategoryName = "Electronics", Status = "Available",
+        OrderDate = new DateTime(2021, 7, 12), ParentId = null },
+        new BusinessObject { CategoryId = 2, CategoryName = "Cell phone", Status = "Out of Stock",
+        OrderDate = new DateTime(2021, 6, 17), ParentId = 1 },
+        new BusinessObject { CategoryId = 3, CategoryName = "Computer", Status = "Available",
+        OrderDate = new DateTime(2021, 7, 12), ParentId = 7 },
+        new BusinessObject { CategoryId = 4, CategoryName = "Cloth", Status = "Available",
+        OrderDate = new DateTime(2021, 10, 5), ParentId = null },
+        new BusinessObject { CategoryId = 5, CategoryName = "Silk", Status = "Out of Stock",
+        OrderDate = new DateTime(2021, 9, 2), ParentId = 7 },
+        new BusinessObject { CategoryId = 6, CategoryName = "Chair", Status = "Available",
+        OrderDate = new DateTime(2021, 3, 3), ParentId = 1 },
+        new BusinessObject { CategoryId = 7, CategoryName = "Furniture", Status = "Available",
+        OrderDate = new DateTime(2021, 3, 5), ParentId = null },
+        new BusinessObject { CategoryId = 8, CategoryName = "Bed", Status = "Available",
+        OrderDate = new DateTime(2021, 3, 5), ParentId = 7 },
+        new BusinessObject { CategoryId = 9, CategoryName = "Fabrics", Status = "Available",
+        OrderDate = new DateTime(2021, 10, 5), ParentId = 4 },
+        new BusinessObject { CategoryId = 10, CategoryName = "Books", Status = "Available",
+        OrderDate = new DateTime(2021, 8, 20), ParentId = null },
+        new BusinessObject { CategoryId = 11, CategoryName = "Fiction", Status = "Available",
+        OrderDate = new DateTime(2021, 9, 25), ParentId = 10 },
+        new BusinessObject { CategoryId = 12, CategoryName = "Non-Fiction", Status = "Available",
+        OrderDate = new DateTime(2021, 7, 15), ParentId = 7 },
+
+    };
+
+    // Represents each category's data in the tree grid.
+    public class BusinessObject
+    {
+        public int CategoryId { get; set; }
+        public string? CategoryName { get; set; }
+        public string? Status { get; set; }
+        public DateTime OrderDate { get; set; }
+        public int? ParentId { get; set; }
+    }
+}
