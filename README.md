@@ -48,14 +48,11 @@ Hierarchical data visualization with AI-assisted navigation and intelligent data
 - **Features**: AI data processing, intelligent hierarchy analysis, smart insights
 - **Use Cases**: Organizational structures, inventory management, project hierarchies
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
-
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or later
-- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/)
-- An AI service account (Azure OpenAI or OpenAI)
-- Syncfusion Blazor license
+* [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or later
+* [Visual Studio Code](https://code.visualstudio.com/)
+* [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) or later
 
 ## Getting Started
 
@@ -83,20 +80,12 @@ dotnet restore
 dotnet run
 ```
 
-
-
-## Supported Platforms
-
-Currently, this repository focuses on **Blazor** (.NET) implementations. For other platforms:
-
-- [Angular Examples](https://github.com/SyncfusionExamples/angular-smart-ai-samples)
-- [React Examples](https://github.com/SyncfusionExamples/react-smart-ai-samples)
-- [Vue Examples](https://github.com/SyncfusionExamples/vue-smart-ai-samples)
-
 ## References
 
-- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)
 - [OpenAI Platform Documentation](https://platform.openai.com/docs)
-- [Build AI Apps with .NET](https://learn.microsoft.com/en-us/dotnet/ai/)
+- https://blazor.syncfusion.com/documentation/combobox/getting-started-with-web-app
+- https://blazor.syncfusion.com/documentation/datagrid/getting-started-with-web-app
+- https://blazor.syncfusion.com/documentation/scheduler/getting-started-webapp
+- https://blazor.syncfusion.com/documentation/treegrid/getting-started-webapp
 
 
