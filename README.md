@@ -1,78 +1,102 @@
 # Blazor Smart AI Powered Components
 
+ Build intelligent, AI-enhanced Blazor applications with AI powered components
+
 ## Overview
 
-Syncfusion Smart Components are designed to seamlessly integrate with AI and offering intelligent features that go beyond standard user interfaces.
+This repository contains production-ready Blazor examples demonstrating how to build AI-powered applications using components integrated with modern AI services. Each sample showcases intelligent features that streamline user interactions and improve application functionality through artificial intelligence.
 
-## Whats included?
+Explore how to leverage smart components and AI-assisted workflows to create powerful web applications that adapt to user needs and provide intelligent assistance.
 
-- Currently Syncfusion offers below as smart components with preview features
+## Key Features
 
-  - **Smart Paste Button** : A button component that automatically fills out forms using data from the user's clipboard. Seamlessly integrate it with any existing form in your web application to enable users to paste data from external sources without the need for manual re-typing. This feature streamlines data entry, improving efficiency and reducing errors.
+- **Smart Components**: Ready-to-use Blazor components with built-in AI capabilities
+- **Multiple AI Backends**: Support for Azure OpenAI and OpenAI services
+- **Production-Ready Samples**: Complete working examples with best practices
+- **Easy Integration**: Seamless integration with Syncfusion Blazor components
+- **Local Embedding Support**: Local embedding capabilities via `SmartComponents.LocalEmbeddings`
 
-  - **Smart TextArea** : This component allows you to configure smart autocomplete for entire sentences. Tailor the suggestions based on your preferred tone, internal policies, frequently used URLs, and more. It helps users type faster, maintain consistency, and avoid the need to remember details like URLs or standard phrases.
+## Components
 
-- Intergated AI with existing samples for day to day usecases. example,
+This repository includes comprehensive examples for the following Syncfusion components with AI integration:
 
-  - Create MindMap/Flowchart Diagram using the exsisting Syncfusion `Diagram` Component with AI assistance.
+### ComboBox
+Smart ComboBox component with AI-assisted selection and autocomplete capabilities. Features intelligent filtering and suggestion generation based on user input and context.
 
-  - `PDF Viewer` Component with Summarization. Redaction using AI Assistance.
+- **Location**: `/ComboBox`
+- **Features**: Smart autocomplete, AI-powered suggestions, context-aware filtering
+- **Use Cases**: Search fields, intelligent data entry forms, category selection
 
-  - `Document Editor` and `Rich Text Editor` with Summarization, Grammar Check, Translation and more using AI Assisatnce.
+### DataGrid
+AI-enhanced DataGrid with intelligent data processing, summarization, and analysis capabilities. Generate insights from data using natural language queries.
 
-  - Data Processing samples using AI with `DataGrid`, `Treegrid`, `Gantt`, `File Manager`, `Scheduler` and more.
+- **Location**: `/DataGrid`
+- **Features**: AI data analysis, smart filtering, automated summarization
+- **Use Cases**: Data exploration, business intelligence dashboards, data-driven insights
 
-## Included platforms
+### Scheduler
+Intelligent scheduling component with AI assistance for meeting optimization, conflict detection, and smart recommendations. Leverage AI to suggest optimal scheduling patterns.
 
-- [Blazor](blazor/README.md)
+- **Location**: `/Scheduler`
+- **Features**: AI-powered scheduling suggestions, conflict detection, smart recommendations
+- **Use Cases**: Calendar applications, resource allocation, meeting coordination
 
-- [Angular](angular/README.md)
+### TreeGrid
+Hierarchical data visualization with AI-assisted navigation and intelligent data insights. Perfect for complex organizational data and hierarchical relationships.
 
-- [React](react/README.md)
+- **Location**: `/TreeGrid`
+- **Features**: AI data processing, intelligent hierarchy analysis, smart insights
+- **Use Cases**: Organizational structures, inventory management, project hierarchies
 
-- [Vue](vue/README.md)
+## Getting Started
 
-- [TypeScript/JavaScript](typescript/README.md)
+### Prerequisites
 
-## How to Run?
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or later
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/)
+- An AI service account (Azure OpenAI or OpenAI)
+- Syncfusion Blazor license
 
-- For Blazor Follow this [Steps](blazor/README.md#configuration-instructions)
+## Getting Started
 
-- For Angular Follow this [Steps](angular/README.md#configuring-ai-services)
+### Clone the repository
 
-- For React Follow this [Steps](react/README.md#configuring-ai-services)
+```bash
+git clone https://github.com/SyncfusionExamples/blazor-smart-ai-powered-components.git
+cd blazor-smart-ai-powered-components
+```
 
-- For Vue Follow this [Steps](vue/README.md#configuring-ai-services)
+### Run with Visual Studio
 
-- For TS/JS Follow this [Steps](typescript/README.md#configuring-ai-service-credentials)
+1. Open the solution file using Visual Studio 2022 or later.
+2. Restore the NuGet packages by rebuilding the solution.
+3. Build the project to ensure there are no compilation errors.
+4. Run the project.
 
-## Upcoming Plans and Feedbacks
+### Run with .NET CLI
 
-- Currently, Smart AI and Samples supports OpenAI and Azure OpenAI Services alone. Plan to provide multiple AI vendors supports in single place.
+```bash
+# Restore dependencies
+dotnet restore
 
-- If any suggestions / improvements get us with [Github Discussions](https://github.com/syncfusion/smart-ai-samples/issues).
+# Run the project
+dotnet run
+```
 
-## Support and feedback
 
-* For any other queries, reach our [Syncfusion support team](https://www.syncfusion.com/support/directtrac/incidents/newincident) or post the queries through the [Community forums](https://www.syncfusion.com/forums) and submit a feature request or a bug through our [Feedback portal](https://www.syncfusion.com/feedback).
-* To renew the subscription, click [renew](https://www.syncfusion.com/sales/products) or contact our sales team at salessupport@syncfusion.com | Toll Free: 1-888-9 DOTNET.
 
-## License
+## Supported Platforms
 
-Syncfusion JavaScript / Blazor Components is available under the Syncfusion Essential Studio program, and can be licensed either under the Syncfusion Community License Program or the Syncfusion commercial license.
+Currently, this repository focuses on **Blazor** (.NET) implementations. For other platforms:
 
-To be qualified for the Syncfusion Community License Program, you must have gross revenue of less than one (1) million U.S. dollars (USD 1,000,000.00) per year and have less than five (5) developers in your organization, and agree to be bound by Syncfusion’s terms and conditions.
+- [Angular Examples](https://github.com/SyncfusionExamples/angular-smart-ai-samples)
+- [React Examples](https://github.com/SyncfusionExamples/react-smart-ai-samples)
+- [Vue Examples](https://github.com/SyncfusionExamples/vue-smart-ai-samples)
 
-Customers who do not qualify for the community license can contact sales@syncfusion.com for commercial licensing options.
+## References
 
-You may not use this product without first purchasing a Community License or a Commercial License, as well as agreeing to and complying with Syncfusion's license terms and conditions.
+- [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)
+- [OpenAI Platform Documentation](https://platform.openai.com/docs)
+- [Build AI Apps with .NET](https://learn.microsoft.com/en-us/dotnet/ai/)
 
-The Syncfusion license that contains the terms and conditions can be found at
-[https://www.syncfusion.com/content/downloads/syncfusion_license.pdf](https://www.syncfusion.com/content/downloads/syncfusion_license.pdf)
-
-## About Syncfusion
-
-Founded in 2001 and headquartered in Research Triangle Park, N.C., Syncfusion has more than 29,000 customers and more than 1 million users, including large financial institutions, Fortune 500 companies, and global IT consultancies.
-
-Today we provide 1,800+ controls and frameworks for web ([ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls), [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls), [ASP.NET WebForms](https://www.syncfusion.com/jquery/aspnet-web-forms-ui-controls), [JavaScript](https://www.syncfusion.com/javascript-ui-controls), [Angular](https://www.syncfusion.com/angular-ui-components), [React](https://www.syncfusion.com/react-ui-components), [Vue](https://www.syncfusion.com/vue-ui-components), and [Blazor](https://www.syncfusion.com/blazor-components), mobile ([Xamarin](https://www.syncfusion.com/xamarin-ui-controls), [Flutter](https://www.syncfusion.com/flutter-widgets), [UWP](https://www.syncfusion.com/uwp-ui-controls), and [JavaScript](https://www.syncfusion.com/javascript-ui-controls)), and desktop development ([WinForms](https://www.syncfusion.com/winforms-ui-controls), [WPF](https://www.syncfusion.com/wpf-ui-controls), and [UWP](https://www.syncfusion.com/uwp-ui-controls) and [WinUI](https://www.syncfusion.com/winui-controls))). We provide ready-to deploy enterprise software for dashboards, reports, data integration, and big data processing. Many customers have saved millions in licensing fees by deploying our software.
 
